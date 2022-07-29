@@ -1,0 +1,33 @@
+PODS:
+  - activelook_sdk (0.0.1):
+    - Flutter
+  - ActiveLookSDK (4.3.0)
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - activelook_sdk (from `.symlinks/plugins/activelook_sdk/ios`)
+  - ActiveLookSDK (from `https://github.com/ActiveLook/ios-sdk.git`, tag `v4.3.0`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  activelook_sdk:
+    :path: ".symlinks/plugins/activelook_sdk/ios"
+  ActiveLookSDK:
+    :git: https://github.com/ActiveLook/ios-sdk.git
+    :tag: v4.3.0
+  Flutter:
+    :path: Flutter
+
+CHECKOUT OPTIONS:
+  ActiveLookSDK:
+    :git: https://github.com/ActiveLook/ios-sdk.git
+    :tag: v4.3.0
+
+SPEC CHECKSUMS:
+  activelook_sdk: 94ef0c96e45128715c53e0f0838627239db4eb47
+  ActiveLookSDK: be44ac550ba7e9ddacd2ccc837a020ca5e3ca3c8
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+
+PODFILE CHECKSUM: a3435af0c42989261eb68c809690ac43998b2208
+
+COCOAPODS: 1.11.3
