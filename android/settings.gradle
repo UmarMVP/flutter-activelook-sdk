@@ -1,1 +1,8 @@
 rootProject.name = 'activelook_sdk'
+
+dependencyResolutionManagement {
+  repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+  }
+}
