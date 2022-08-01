@@ -24,19 +24,17 @@ import java.util.HashMap;
 
 /** ActivelookSdkPlugin */
 public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
   private MethodChannel channel;
 
   private Context context;
   private BinaryMessenger messenger;
   private Sdk activelookSdk = null;
 
+  // Flutter plugin implementation
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "activelook_sdk");
+    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "ActiveLookSDK");
     channel.setMethodCallHandler(this);
 
     this.context = flutterPluginBinding.getApplicationContext();
@@ -45,62 +43,13 @@ public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("getPlatformVersion")) {
-      this.log("working function test");
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if(call.method.equals("initSdk")) {
-        String token = (String) call.arguments;
-        this.log("initializing SDK with " + token + "...");
-        try {
-          this.activelookSdk = Sdk.init(this.context, token, new Consumer<GlassesUpdate>() {
-            @Override
-            public void accept(GlassesUpdate glassesUpdate) {
-              invokeMethodOnUiThread("handleUpdateStart", new HashMap());
-            }
-          }, new Predicate<GlassesUpdate>() {
-            @Override
-            public boolean test(GlassesUpdate glassesUpdate) {
-              invokeMethodOnUiThread("handleUpdateAvailable", new HashMap());
-              return false;
-            }
-          }, new Consumer<GlassesUpdate>() {
-            @Override
-            public void accept(GlassesUpdate glassesUpdate) {
-              invokeMethodOnUiThread("handleUpdateProgress", new HashMap());
-            }
-          }, new Consumer<GlassesUpdate>() {
-            @Override
-            public void accept(GlassesUpdate glassesUpdate) {
-              invokeMethodOnUiThread("handleUpdateSuccess", new HashMap());
-            }
-          }, new Consumer<GlassesUpdate>() {
-            @Override
-            public void accept(GlassesUpdate glassesUpdate) {
-              invokeMethodOnUiThread("handleUpdateError", new HashMap());
-            }
-          });
-        } catch (Error err) {
-          this.log(err.toString());
-        }
-
-        this.log("initialized SDK !");
-        result.success("Sdk initialized");
-    } else if (call.method.equals("startScan")) {
-
-      this.log("Called start scan");
-      if (this.activelookSdk == null) return;
-      this.log("Start scanning..." );
-
-      this.activelookSdk.startScan(new Consumer<DiscoveredGlasses>() {
-        @Override
-        public void accept(DiscoveredGlasses dg) {
-          ActivelookSdkPlugin.this.log("Glasses found :" +  dg.getName());
-          HashMap<String, Object> args = new HashMap<>();
-          args.put("uuid", dg.getAddress());
-          args.put("name", dg.getName());
-          invokeMethodOnUiThread("handleDiscoveredGlasses", args);
-        }
-      });
+    if(call.method.equals("ActiveLookSDK#initSdk")) {
+      String token = (String) call.arguments;
+      this.initSdk(token);
+      result.success("Sdk initialized");
+    }
+    else if (call.method.equals("ActiveLookSDK#startScan")) {
+      this.startScan();
       result.success("Start scanning...");
     } else {
       result.notImplemented();
@@ -112,12 +61,38 @@ public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
     channel.setMethodCallHandler(null);
   }
 
-  // Sdk callbacks
+  // Sdk methods calls
 
-  // utils
+  private void initSdk(String token) {
+    this.activelookSdk = Sdk.init(
+            this.context,
+            token,
+            glassesUpdate -> invokeMethodOnUiThread("handleUpdateStart", new HashMap()),
+            glassesUpdate -> {
+              invokeMethodOnUiThread("handleUpdateAvailable", new HashMap());
+              return false;
+            },
+            glassesUpdate -> invokeMethodOnUiThread("handleUpdateProgress", new HashMap()),
+            glassesUpdate -> invokeMethodOnUiThread("handleUpdateSuccess", new HashMap()),
+            glassesUpdate -> invokeMethodOnUiThread("handleUpdateError", new HashMap())
+    );
+  }
+
+  private void startScan() {
+    if (this.activelookSdk == null) return;
+
+    this.activelookSdk.startScan(dg -> {
+      HashMap<String, Object> args = new HashMap<>();
+      args.put("uuid", dg.getAddress());
+      args.put("name", dg.getName());
+      invokeMethodOnUiThread("handleDiscoveredGlasses", args);
+    });
+  }
+
+  // Utils
 
   private void log(String message) {
-    Log.d("FLUTTER_ACTIVELOOK", message);
+    Log.d("FROM_NATIVE", message);
   }
 
   private void runOnMainThread(final Runnable runnable) {

@@ -1,43 +1,29 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'activelook_sdk_platform_interface.dart';
+class ActiveLookSDKChannel {
+  static ActiveLookSDKChannel shared = ActiveLookSDKChannel();
 
-/// An implementation of [ActivelookSdkPlatform] that uses method channels.
-class MethodChannelActivelookSdk extends ActivelookSdkPlatform {
-  /// The method channel used to interact with the native platform.
-  @visibleForTesting
-  final methodChannel = const MethodChannel('activelook_sdk');
+  final methodChannel = const MethodChannel('ActiveLookSDK');
 
   MethodChannelActivelookSdk() {
     methodChannel.setMethodCallHandler(_handleMethod);
   }
 
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
-  }
-
-  @override
   Future<String?> initSdk() async {
     final status = await methodChannel.invokeMethod<String?>(
-        "initSdk", "bdjZ3ulWitvUzVtUHevbll1AiOANEfPYsv5u6RaGcxk");
-    log(status!);
+        "ActiveLookSDK#initSdk", "bdjZ3ulWitvUzVtUHevbll1AiOANEfPYsv5u6RaGcxk");
+    print(status!);
   }
 
-  @override
   Future<String?> startScan() async {
-    final status = await methodChannel.invokeMethod<String?>("startScan");
-    print('TEST SCAN');
+    final status =
+        await methodChannel.invokeMethod<String?>("ActiveLookSDK#startScan");
     print(status!);
   }
 
   Future<Null> _handleMethod(MethodCall call) async {
-    print('call from SDK');
     switch (call.method) {
       case 'handleUpdateStart':
         log("Update started !");
@@ -56,7 +42,8 @@ class MethodChannelActivelookSdk extends ActivelookSdkPlatform {
         break;
       case 'handleDiscoveredGlasses':
         Map<String, dynamic> args = call.arguments.cast<String, dynamic>();
-        log('Discovered glasses :  ${args["name"]}');
+        String glassesName = args["name"];
+        print('Discovered glasses :  $glassesName');
         break;
       default:
         log("UNKNOWN METHOD");
