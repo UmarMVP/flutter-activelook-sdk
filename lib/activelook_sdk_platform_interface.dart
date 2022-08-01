@@ -14,7 +14,7 @@ abstract class ActivelookSdkPlatform extends PlatformInterface {
   ///
   /// Defaults to [MethodChannelActivelookSdk].
   static ActivelookSdkPlatform get instance => _instance;
-  
+
   /// Platform-specific implementations should set this with their own
   /// platform-specific class that extends [ActivelookSdkPlatform] when
   /// they register themselves.
@@ -25,5 +25,13 @@ abstract class ActivelookSdkPlatform extends PlatformInterface {
 
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<String?> initSdk() {
+    throw UnimplementedError('initSdk() has not been implemented.');
+  }
+
+  Future<String?> startScan() {
+    throw UnimplementedError('startScan() has not been implemented.');
   }
 }
