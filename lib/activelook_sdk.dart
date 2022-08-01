@@ -8,4 +8,8 @@ class ActivelookSdk {
   Future<String?> startScan() {
     return ActiveLookSDKChannel.shared.startScan();
   }
+
+  Future<String?> connectGlasses() {
+    return ActiveLookSDKChannel.shared.connectGlasses();
+  }
 }

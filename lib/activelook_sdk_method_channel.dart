@@ -23,6 +23,12 @@ class ActiveLookSDKChannel {
     print(status!);
   }
 
+  Future<String?> connectGlasses() async {
+    final status = await methodChannel
+        .invokeMethod<String?>("ActiveLookSDK#connectGlasses");
+    print(status!);
+  }
+
   Future<Null> _handleMethod(MethodCall call) async {
     switch (call.method) {
       case 'handleUpdateStart':
@@ -43,7 +49,19 @@ class ActiveLookSDKChannel {
       case 'handleDiscoveredGlasses':
         Map<String, dynamic> args = call.arguments.cast<String, dynamic>();
         String glassesName = args["name"];
-        print('Discovered glasses :  $glassesName');
+        String glassesUUID = args["uuid"];
+        print(
+          'Discovered glasses :  $glassesName, $glassesUUID',
+        );
+        break;
+      case 'handleConnectedGlasses':
+        log("Connected to glasses !");
+        break;
+      case 'handleConnectionFail':
+        log("Connection failed !");
+        break;
+      case 'handleDisconnectedGlasses':
+        log("Disconnected from glasses !");
         break;
       default:
         log("UNKNOWN METHOD");

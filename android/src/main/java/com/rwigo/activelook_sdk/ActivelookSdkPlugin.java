@@ -20,6 +20,8 @@ import com.activelook.activelooksdk.DiscoveredGlasses;
 import com.activelook.activelooksdk.Sdk;
 import com.activelook.activelooksdk.types.GlassesUpdate;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /** ActivelookSdkPlugin */
@@ -29,6 +31,8 @@ public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private Context context;
   private BinaryMessenger messenger;
   private Sdk activelookSdk = null;
+
+  private ArrayList<DiscoveredGlasses> discoveredGlasses = new ArrayList<>();
 
   // Flutter plugin implementation
 
@@ -51,7 +55,13 @@ public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
     else if (call.method.equals("ActiveLookSDK#startScan")) {
       this.startScan();
       result.success("Start scanning...");
-    } else {
+    }
+    else if (call.method.equals("ActiveLookSDK#connectGlasses")) {
+      String uuid = (String) call.arguments;
+      this.connectGlasses(uuid);
+      result.success("Connected !");
+    }
+    else {
       result.notImplemented();
     }
   }
@@ -82,11 +92,25 @@ public class ActivelookSdkPlugin implements FlutterPlugin, MethodCallHandler {
     if (this.activelookSdk == null) return;
 
     this.activelookSdk.startScan(dg -> {
+      this.discoveredGlasses.add(dg);
       HashMap<String, Object> args = new HashMap<>();
       args.put("uuid", dg.getAddress());
       args.put("name", dg.getName());
       invokeMethodOnUiThread("handleDiscoveredGlasses", args);
+      this.connectGlasses(dg.getAddress());
     });
+  }
+
+  private void connectGlasses(String uuid) {
+    for (DiscoveredGlasses dg : this.discoveredGlasses) {
+      if (dg.getAddress().equals(uuid)) {
+        dg.connect(
+                glasses -> invokeMethodOnUiThread("handleConnectedGlasses", new HashMap()),
+                discoveredGlasses -> invokeMethodOnUiThread("handleConnectionFail", new HashMap()),
+                glasses -> invokeMethodOnUiThread("handleDisconnectedGlasses", new HashMap())
+        );
+      }
+    }
   }
 
   // Utils
