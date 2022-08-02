@@ -45,5 +45,7 @@
 	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>ActiveLook utilise le Bluetooth pour pouvoir se connecter à vos lunettes</string>
 </dict>
 </plist>
