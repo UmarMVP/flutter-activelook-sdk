@@ -6,65 +6,115 @@ class ActiveLookSDKChannel {
   static ActiveLookSDKChannel shared = ActiveLookSDKChannel();
 
   final methodChannel = const MethodChannel('ActiveLookSDK');
+  static const EventChannel _scanResultsChannel =
+      EventChannel('ActiveLookSDK/scanResults');
+  static const EventChannel _connectionStatusChannel =
+      EventChannel('ActiveLookSDK/connectionStatus');
 
-  MethodChannelActivelookSdk() {
-    methodChannel.setMethodCallHandler(_handleMethod);
-  }
+  // MethodChannelActivelookSdk() {
+  //   methodChannel.setMethodCallHandler(_handleMethod);
+  // }
 
-  Future<String?> initSdk() async {
-    final status = await methodChannel.invokeMethod<String?>(
-        "ActiveLookSDK#initSdk", "bdjZ3ulWitvUzVtUHevbll1AiOANEfPYsv5u6RaGcxk");
-    print(status!);
-  }
-
-  Future<String?> startScan() async {
-    final status =
-        await methodChannel.invokeMethod<String?>("ActiveLookSDK#startScan");
-    print(status!);
-  }
-
-  Future<String?> connectGlasses() async {
-    final status = await methodChannel
-        .invokeMethod<String?>("ActiveLookSDK#connectGlasses");
-    print(status!);
-  }
-
-  Future<Null> _handleMethod(MethodCall call) async {
-    switch (call.method) {
-      case 'handleUpdateStart':
-        log("Update started !");
-        break;
-      case 'handleUpdateAvailable':
-        log("Update available !");
-        break;
-      case 'handleUpdateProgress':
-        log("Update progress !");
-        break;
-      case 'handleUpdateSuccess':
-        log("Update SUCCESS !");
-        break;
-      case 'handleUpdateError':
-        log("Update ERROR !");
-        break;
-      case 'handleDiscoveredGlasses':
-        Map<String, dynamic> args = call.arguments.cast<String, dynamic>();
-        String glassesName = args["name"];
-        String glassesUUID = args["uuid"];
-        print(
-          'Discovered glasses :  $glassesName, $glassesUUID',
-        );
-        break;
-      case 'handleConnectedGlasses':
-        log("Connected to glasses !");
-        break;
-      case 'handleConnectionFail':
-        log("Connection failed !");
-        break;
-      case 'handleDisconnectedGlasses':
-        log("Disconnected from glasses !");
-        break;
-      default:
-        log("UNKNOWN METHOD");
+  Future<bool?> initSdk() async {
+    try {
+      final status =
+          await methodChannel.invokeMethod<String?>("ActiveLookSDK#initSdk");
+      if (status != "true") {
+        log(status.toString());
+      }
+      return status == "true";
+    } on PlatformException catch (e) {
+      log('Error initializing SDK: ${e.message}');
+      return false;
     }
+  }
+
+  Future<bool?> startScan() async {
+    try {
+      final status =
+          await methodChannel.invokeMethod<String?>("ActiveLookSDK#startScan");
+
+      if (status != "true") {
+        log(status.toString());
+      }
+      return status == "true";
+    } on PlatformException catch (e) {
+      log('Error initializing SDK: ${e.message}');
+      return false;
+    }
+  }
+
+  Future<void> connectGlasses(String identifier) async {
+    try {
+      final status = await methodChannel.invokeMethod<String?>(
+        "ActiveLookSDK#connectGlasses",
+        {"identifier": identifier},
+      );
+    } on PlatformException catch (e) {
+      log('Error initializing SDK: ${e.message}');
+    }
+  }
+
+  Future<bool?> isSdkInitialized() async {
+    try {
+      final status = await methodChannel
+          .invokeMethod<String?>("ActiveLookSDK#isSdkInitialized");
+      return status == "true";
+    } on PlatformException catch (e) {
+      log('Error initializing SDK: ${e.message}');
+      return false;
+    }
+  }
+
+  Future<bool?> stopScan() async {
+    try {
+      final status =
+          await methodChannel.invokeMethod<String?>("ActiveLookSDK#stopScan");
+      if (status != "true") {
+        log(status.toString());
+      }
+      return status == "true";
+    } on PlatformException catch (e) {
+      log('Stop scan error: ${e.message}');
+      return false;
+    }
+  }
+
+  Future<bool?> disconnectGlasses(String identifier) async {
+    try {
+      final status = await methodChannel.invokeMethod<String?>(
+        "ActiveLookSDK#disconnectGlasses",
+        {"identifier": identifier},
+      );
+      if (status != "true") {
+        log(status.toString());
+      }
+      return status == "true";
+    } on PlatformException catch (e) {
+      log('Disconnect error: ${e.message}');
+      return false;
+    }
+  }
+
+  void listenToScanResults(
+      Function(dynamic) onData, Function(dynamic) onError) {
+    _scanResultsChannel.receiveBroadcastStream("scanResults").listen(
+      onData,
+      onError: (error) {
+        log('Scan error: $error');
+        onError(error);
+      },
+    );
+  }
+
+  void listenToConnectionStatus(
+      Function(dynamic) onData, Function(dynamic) onError) {
+    _connectionStatusChannel.receiveBroadcastStream("connectionStatus").listen(
+      onData,
+      onError: (error) {
+        log('Connection status error: $error');
+        onError(error);
+      },
+    );
   }
 }
