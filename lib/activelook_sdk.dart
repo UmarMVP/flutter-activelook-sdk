@@ -32,8 +32,19 @@ class ActivelookSdk {
     return ActiveLookSDKChannel.shared.disconnectGlasses(identifier);
   }
 
+    Future<void> sendTextToGlasses(
+      String text, int x, int y, int rotation, int font, int color) {
+    ActiveLookSDKChannel.shared
+        .sendTextToGlasses(text, x, y, rotation, font, color);
+    return Future.value();
+  }
+
+
   void listenToConnectionStatus(
       Function(dynamic) onData, Function(dynamic) onError) {
     ActiveLookSDKChannel.shared.listenToConnectionStatus(onData, onError);
+  }
+  void dispose() {
+    ActiveLookSDKChannel.shared.dispose();
   }
 }

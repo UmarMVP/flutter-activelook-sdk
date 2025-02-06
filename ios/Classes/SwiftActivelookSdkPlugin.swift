@@ -168,6 +168,25 @@ public class SwiftActivelookSdkPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     } else {
         result("Invalid identifier or glasses not found")
     }
+}else if call.method.elementsEqual("ActiveLookSDK#dispose") {
+
+    sdk.stopScanning()
+    sdk = nil
+}else if call.method.elementsEqual("ActiveLookSDK#sendText") {
+    if let arguments = call.arguments as? [String: Any],
+       let text = arguments["text"] as? String,
+       let x = arguments["x"] as? Int16,
+       let y = arguments["y"] as? Int16,
+       let rotationValue = arguments["rotation"] as? Int,
+       let font = arguments["font"] as? UInt8,
+       let color = arguments["color"] as? UInt8 {
+
+        let rotation = TextRotation(rawValue: rotationValue) ?? .none  // Assuming .none as default
+        txt(x: x, y: y, rotation: rotation, font: font, color: color, string: text)
+        result("true")
+    } else {
+        result(FlutterError(code: "INVALID_ARGUMENTS", message: "Missing parameters", details: nil))
+    }
 } else {
 result(FlutterMethodNotImplemented)
 

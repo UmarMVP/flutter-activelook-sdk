@@ -106,6 +106,22 @@ class ActiveLookSDKChannel {
       },
     );
   }
+   Future<void> sendTextToGlasses(
+      String text, int x, int y, int rotation, int font, int color) async {
+    try {
+      final result = await platform.invokeMethod('ActiveLookSDK#sendText', {
+        'text': text,
+        'x': x,
+        'y': y,
+        'rotation': rotation,
+        'font': font,
+        'color': color,
+      });
+      print(result);
+    } catch (e) {
+      print("Error sending text: $e");
+    }
+  }
 
   void listenToConnectionStatus(
       Function(dynamic) onData, Function(dynamic) onError) {
@@ -116,5 +132,13 @@ class ActiveLookSDKChannel {
         onError(error);
       },
     );
+  }
+    void dispose() {
+    _scanResultsChannel.receiveBroadcastStream("scanResults").cancel();
+    _connectionStatusChannel
+        .receiveBroadcastStream("connectionStatus")
+        .cancel();
+    methodChannel.setMethodCallHandler(null);
+    methodChannel.invokeMethod("ActiveLookSDK#dispose");
   }
 }
