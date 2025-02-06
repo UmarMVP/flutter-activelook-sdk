@@ -109,7 +109,7 @@ class ActiveLookSDKChannel {
    Future<void> sendTextToGlasses(
       String text, int x, int y, int rotation, int font, int color) async {
     try {
-      final result = await platform.invokeMethod('ActiveLookSDK#sendText', {
+      final result = await methodChannel.invokeMethod('ActiveLookSDK#sendText', {
         'text': text,
         'x': x,
         'y': y,
@@ -134,11 +134,8 @@ class ActiveLookSDKChannel {
     );
   }
     void dispose() {
-    _scanResultsChannel.receiveBroadcastStream("scanResults").cancel();
-    _connectionStatusChannel
-        .receiveBroadcastStream("connectionStatus")
-        .cancel();
-    methodChannel.setMethodCallHandler(null);
+    stopScan();
     methodChannel.invokeMethod("ActiveLookSDK#dispose");
+    methodChannel.setMethodCallHandler(null);
   }
 }
